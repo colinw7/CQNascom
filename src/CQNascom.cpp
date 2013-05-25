@@ -237,14 +237,14 @@ clear(bool invert)
 
 void
 CQNascomRenderer::
-drawChar(int x, int y, char c)
+drawChar(int x, int y, uchar c)
 {
   painter_->drawImage(x, y, getCharImage(c));
 }
 
 QImage
 CQNascomRenderer::
-getCharImage(char c)
+getCharImage(uchar c)
 {
   if (! chars_loaded_)
     loadChars();
@@ -256,23 +256,23 @@ void
 CQNascomRenderer::
 loadChars()
 {
-  QImage image(nascom_chars);
+  char_image_ = QImage(nascom_chars);
 
-  loadImageChars(image);
+  loadImageChars();
 }
 
 void
 CQNascomRenderer::
 loadChars(const string &filename)
 {
-  QImage image(filename.c_str());
+  char_image_ = QImage(filename.c_str());
 
-  loadImageChars(image);
+  loadImageChars();
 }
 
 void
 CQNascomRenderer::
-loadImageChars(QImage image)
+loadImageChars()
 {
   bool invert = qnascom_->getNascom()->getInvert();
   int  scale  = qnascom_->getNascom()->getScale ();
@@ -288,10 +288,15 @@ loadImageChars(QImage image)
     ushort x = 0;
 
     for (ushort i = 0; i < 16; ++i, ++k) {
-      QImage image1 = image.copy(x, y, char_width, char_height);
+      QImage image1 = char_image_.copy(x, y, char_width, char_height);
 
-      if (! invert)
-        image1.invertPixels();
+      QImage image2;
+
+      if (! invert) {
+        image2 = invertPixels(image1);
+
+        image1 = image2;
+      }
 
       if (scale > 1) {
         QImage image2 = image1.scaled(scale*char_width, scale*char_height);
@@ -308,4 +313,51 @@ loadImageChars(QImage image)
   }
 
   chars_loaded_ = true;
+}
+
+QImage
+CQNascomRenderer::
+invertPixels(QImage image)
+{
+  QImage image1;
+
+  if (image.format() == QImage::Format_ARGB32 ||
+      image.format() == QImage::Format_Indexed8)
+    image1 = image;
+  else
+    image1 = image.convertToFormat(QImage::Format_ARGB32);
+
+  int w = image1.width();
+  int h = image1.height();
+
+  QImage::Format format = image1.format();
+
+  if (format == QImage::Format_ARGB32) {
+    for (int y = 0; y < h; ++y) {
+      for (int x = 0; x < w; ++x) {
+        QRgb rgb = image1.pixel(x, y);
+
+        int g = 255 - qGray(rgb);
+
+        QRgb rgb1 = qRgba(g, g, g, 255);
+
+        image1.setPixel(x, y, rgb1);
+      }
+    }
+  }
+  else {
+    int ncolors = image1.colorCount();
+
+    for (int i = 0; i < ncolors; ++i) {
+      QRgb rgb = image1.color(i);
+
+      int g = 255 - qGray(rgb);
+
+      QRgb rgb1 = qRgba(g, g, g, 255);
+
+      image1.setColor(i, rgb1);
+    }
+  }
+
+  return image1;
 }

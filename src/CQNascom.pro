@@ -1,7 +1,10 @@
 TEMPLATE = app
+
 TARGET = 
 DEPENDPATH += .
 INCLUDEPATH += . ../include
+
+CONFIG += debug
 
 # Input
 SOURCES += \

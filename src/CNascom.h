@@ -13,7 +13,7 @@ class CNascomRenderer {
 
   virtual void clear(bool invert) = 0;
 
-  virtual void drawChar(int x, int y, char c) = 0;
+  virtual void drawChar(int x, int y, uchar c) = 0;
 };
 
 class CNascom {

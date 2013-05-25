@@ -43,18 +43,20 @@ class CQNascomRenderer : public CNascomRenderer {
 
   void clear(bool invert);
 
-  void drawChar(int x, int y, char c);
+  void drawChar(int x, int y, uchar c);
 
  private:
-  QImage getCharImage(char c);
+  QImage getCharImage(uchar c);
 
   void loadChars();
+  void loadImageChars();
 
-  void loadImageChars(QImage image);
+  QImage invertPixels(QImage image);
 
  private:
   CQNascom            *qnascom_;
   QPainter            *painter_;
   bool                 chars_loaded_;
+  QImage               char_image_;
   std::vector<QImage>  char_images_;
 };
