@@ -2,5 +2,6 @@ all:
 	cd src; make
 
 clean:
-	cd src; make clean
-	rm bin/CQNascom
+	cd src; qmake; make clean
+	rm src/Makefile
+	rm -f bin/CQNascom
