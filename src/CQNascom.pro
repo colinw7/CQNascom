@@ -23,7 +23,10 @@ DESTDIR     = ../bin
 OBJECTS_DIR = ../obj
 LIB_DIR     = ../lib
 
-INCLUDEPATH += ../include
+INCLUDEPATH += \
+../include \
+../../CZ80/include \
+../../CArgs/include \
 
 unix:LIBS += \
 -L$$LIB_DIR \
