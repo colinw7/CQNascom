@@ -32,4 +32,13 @@ INCLUDEPATH += \
 
 unix:LIBS += \
 -L$$LIB_DIR \
--lCArgs -lCZ80 -lCFile -lCOS -lCStrUtil
+-L../../CArgs/lib \
+-L../../CZ80/lib \
+-L../../CFile/lib \
+-L../../COS/lib \
+-L../../CStrUtil/lib \
+-lCArgs \
+-lCZ80 \
+-lCFile \
+-lCOS \
+-lCStrUtil
