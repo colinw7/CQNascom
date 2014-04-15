@@ -1,7 +1,9 @@
 TEMPLATE = app
 
-TARGET = 
+TARGET = CQNascom
+
 DEPENDPATH += .
+
 INCLUDEPATH += . ../include
 
 CONFIG += debug
