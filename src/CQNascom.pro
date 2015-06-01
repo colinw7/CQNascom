@@ -1,10 +1,14 @@
 TEMPLATE = app
 
+QT += widgets
+
 TARGET = CQNascom
 
 DEPENDPATH += .
 
 INCLUDEPATH += . ../include
+
+QMAKE_CXXFLAGS += -std=c++11
 
 CONFIG += debug
 
