@@ -1,17 +1,17 @@
-#include "CQNascom.h"
-#include "CQUtil.h"
-
+#include <CQNascom.h>
 #include <CNascom.h>
+#include <CArgs.h>
+#include <CQUtil.h>
+
 #include <CNascomChars.h>
 
 #include <CKeyType.h>
-#include <CArgs.h>
 
 #include <QApplication>
-#include <QKeyEvent>
 #include <QWidget>
 #include <QPainter>
 #include <QTimer>
+#include <QKeyEvent>
 
 using std::string;
 
