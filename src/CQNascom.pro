@@ -6,6 +6,8 @@ TARGET = CQNascom
 
 DEPENDPATH += .
 
+MOC_DIR = .moc
+
 INCLUDEPATH += . ../include
 
 QMAKE_CXXFLAGS += -std=c++11
