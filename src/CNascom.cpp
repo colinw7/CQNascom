@@ -1,10 +1,14 @@
 #include <CNascom.h>
-#include <CStrUtil.h>
+#include <CNascomChars.h>
+#include <CNascomKeyMap.h>
+#include <CNascomScreenMap.h>
+#include <CZ80PortData.h>
 
-#include "CNascomKeyMap.h"
-#include "CNascomScreenMap.h"
-#include "roms/NASSYS3.h"
-#include "roms/BASIC.h"
+#include <CStrUtil.h>
+#include <CImageLib.h>
+
+#include <roms/NASSYS3.h>
+#include <roms/BASIC.h>
 
 using std::string;
 using std::cerr;
@@ -14,12 +18,12 @@ class CNascomPortData : public CZ80PortData {
  public:
   CNascomPortData(CZ80 &z80) : CZ80PortData(z80) { }
 
-  void out(uchar port, uchar value);
+  void out(uchar port, uchar value) override;
 
-  uchar in(uchar port, uchar qual);
+  uchar in(uchar port, uchar qual) override;
 
-  void keyPress  (CKeyType key_type);
-  void keyRelease(CKeyType key_type);
+  void keyPress  (const CKeyEvent &kevent) override;
+  void keyRelease(const CKeyEvent &kevent) override;
 
   bool lookupKey(CKeyType key_type, bool press, uint *row, uint *col, bool *shift);
 
@@ -27,8 +31,10 @@ class CNascomPortData : public CZ80PortData {
   char     keycodeToChar (CKeyType key_type);
 
  private:
-  bool key_handled_;
+  bool key_handled_ { false };
 };
+
+//------
 
 static uchar key_state1[9];
 static uchar key_state2[9];
@@ -39,7 +45,7 @@ static bool  serial_ok    = false;
 
 CNascom::
 CNascom() :
- port_data_(NULL), invert_(false), scale_(1)
+ port_data_(NULL), invert_(false), scale_(1), chars_loaded_(false)
 {
   z80_.setBytes(nassys3_memory, NASSYS3_MEM_START_POS,
                 NASSYS3_MEM_END_POS - NASSYS3_MEM_START_POS + 1);
@@ -51,7 +57,7 @@ CNascom() :
 
   z80_.setPortData(port_data_);
 
-  z80_.setMemFlags(0x0800, 1024, CZ80_MEM_SCREEN);
+  z80_.setMemFlags(0x0800, 1024, uint(CZ80MemType::SCREEN));
 }
 
 CNascom::
@@ -115,8 +121,7 @@ getScreenPos(ushort pos, int *x, int *y)
   return false;
 }
 
-#if 0
-void *
+CImagePtr
 CNascom::
 getCharImage(uchar c)
 {
@@ -130,6 +135,8 @@ bool
 CNascom::
 loadChars()
 {
+  CImageNameSrc src("CNascom/nascom_chars");
+
   CImagePtr image = CImageMgrInst->createImage(src);
 
   image->readXPM((const char **) nascom_chars, sizeof(nascom_chars)/sizeof(char *));
@@ -189,13 +196,12 @@ loadChars(const CImagePtr &image)
 
   return true;
 }
-#endif
 
 void
 CNascom::
 draw(CNascomRenderer *renderer, int border)
 {
-  renderer->clear(invert_);
+  renderer->clear(! invert_ ? CRGB(0,0,0) : CRGB(1,1,1));
 
   ushort y = border;
 
@@ -207,7 +213,7 @@ draw(CNascomRenderer *renderer, int border)
     for (ushort i = 0; i < getScreenCharWidth(); ++i, ++pos) {
       uchar c = z80_.getByte(pos);
 
-      renderer->drawChar(x, y, c);
+      renderer->drawImage(x, y, getCharImage(c));
 
       x += scale_*getCharWidth();
     }
@@ -281,8 +287,10 @@ in(uchar port, uchar)
 
 void
 CNascomPortData::
-keyPress(CKeyType key_type)
+keyPress(const CKeyEvent &kevent)
 {
+  CKeyType key_type = kevent.getType();
+
   uint row, col;
   bool shift;
 
@@ -298,27 +306,31 @@ keyPress(CKeyType key_type)
 
   key_handled_ = false;
 
-  for (uint i = 0; i < 4000; ++i)
-    z80.step();
+  //for (uint i = 0; i < 4000; ++i)
+  //  z80.step();
 }
 
 void
 CNascomPortData::
-keyRelease(CKeyType key_type)
+keyRelease(const CKeyEvent &kevent)
 {
+  CKeyType key_type = kevent.getType();
+
   uint row, col;
   bool shift;
 
   if (! lookupKey(key_type, false, &row, &col, &shift))
     return;
 
-  RESET_BIT(key_state2[row], col);
-  RESET_BIT(key_state2[0  ], 4  );
+  memset(key_state2, 0, 9);
+
+  //RESET_BIT(key_state2[row], col);
+  //RESET_BIT(key_state2[0  ], 4  );
 
   key_handled_ = false;
 
-  for (uint i = 0; i < 4000; ++i)
-    z80.step();
+  //for (uint i = 0; i < 4000; ++i)
+  //  z80.step();
 }
 
 bool

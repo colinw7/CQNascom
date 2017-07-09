@@ -49,12 +49,15 @@ unix:LIBS += \
 -L../../CFont/lib \
 -L../../CImageLib/lib \
 -L../../CConfig/lib \
+-L../../CUtil/lib \
 -L../../CArgs/lib \
 -L../../CZ80/lib \
 -L../../CFile/lib \
+-L../../CFileUtil/lib \
+-L../../CMath/lib \
 -L../../COS/lib \
 -L../../CStrUtil/lib \
 -L../../CRegExp/lib \
--lCQUtil -lCFont -lCImageLib -lCConfig \
--lCArgs -lCZ80 -lCFile -lCOS -lCStrUtil -lCRegExp \
+-lCQUtil -lCFont -lCImageLib -lCConfig -lCUtil \
+-lCArgs -lCZ80 -lCFile -lCFileUtil -lCMath -lCOS -lCStrUtil -lCRegExp \
 -lpng -ljpeg -ltre

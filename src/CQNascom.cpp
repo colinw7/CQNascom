@@ -1,26 +1,19 @@
 #include <CQNascom.h>
 #include <CNascom.h>
+#include <CQZ80Dbg.h>
+
 #include <CArgs.h>
+#include <CQApp.h>
 #include <CQUtil.h>
 
-#include <CNascomChars.h>
-
-#include <CKeyType.h>
-
-#include <QApplication>
 #include <QWidget>
 #include <QPainter>
 #include <QTimer>
-#include <QKeyEvent>
-
-using std::string;
 
 int
 main(int argc, char **argv)
 {
-  QApplication app(argc, argv);
-
-  CNascom *nascom = new CNascom;
+  CQApp app(argc, argv);
 
   CArgs cargs("-v:f        (verbose) "
               "-dump:f     (enable dump) "
@@ -29,24 +22,28 @@ main(int argc, char **argv)
               "-icount:f   (output instruction counts on exit) "
               "-invert:f   (invert screen colors) "
               "-scale:i=1  (scale factor) "
+              "-debug:f    (debug) "
               "-chars:s    (file containg charset image - 128x256 xpm) "
               );
 
   cargs.parse(&argc, argv);
 
-  bool   v_flag        = cargs.getBooleanArg("-v");
-  bool   dump_flag     = cargs.getBooleanArg("-dump");
-  bool   bin_flag      = cargs.getBooleanArg("-bin");
-  bool   snapshot_flag = cargs.getBooleanArg("-snapshot");
-//bool   icount        = cargs.getBooleanArg("-icount");
-  bool   invert        = cargs.getBooleanArg("-invert");
-  int    scale         = cargs.getIntegerArg("-scale");
-  string chars         = cargs.getStringArg ("-chars");
+  bool        verbose  = cargs.getBooleanArg("-v");
+  bool        dump     = cargs.getBooleanArg("-dump");
+  bool        bin      = cargs.getBooleanArg("-bin");
+  bool        snapshot = cargs.getBooleanArg("-snapshot");
+//bool        icount   = cargs.getBooleanArg("-icount");
+  bool        invert   = cargs.getBooleanArg("-invert");
+  int         scale    = cargs.getIntegerArg("-scale");
+  bool        debug    = cargs.getBooleanArg("-debug");
+  std::string chars    = cargs.getStringArg ("-chars");
+
+  CNascom *nascom = new CNascom;
 
   CZ80 *z80 = nascom->getZ80();
 
-  z80->setVerbose(v_flag);
-  z80->setDump(dump_flag);
+  z80->setVerbose(verbose);
+  z80->setDump(dump);
 
   nascom->setInvert(invert);
   nascom->setScale (scale );
@@ -67,60 +64,87 @@ main(int argc, char **argv)
   //------
 
   for (int i = 1; i < argc; ++i) {
-    if      (bin_flag)
+    if      (bin)
       z80->loadBin(argv[i]);
-    else if (snapshot_flag)
+    else if (snapshot)
       z80->loadSnapshot(argv[i]);
     else
       z80->load(argv[i]);
   }
 
-  if (! snapshot_flag)
+  if (! snapshot)
     z80->setPC(0);
 
   if (chars != "")
-    qnascom->loadChars(chars);
+    nascom->loadChars(chars);
 
   qnascom->show();
 
+  //------
+
+  if (debug)
+    qnascom->addDebug();
+
+  //------
+
+  if (! debug)
+    qnascom->exec();
+
   return app.exec();
 }
+
+//------
 
 CQNascom::
 CQNascom(CNascom *nascom, int w, int h) :
  CZ80Screen(*nascom->getZ80()), nascom_(nascom), border_(0)
 {
-  QTimer *timer = new QTimer;
-
-  connect(timer, SIGNAL(timeout()), this, SLOT(timeOut()));
-
   setFocusPolicy(Qt::StrongFocus);
 
   border_ = 4*nascom->getScale();
 
-  renderer_ = new CQNascomRenderer(this);
-
   resize(w, h);
-
-  timer->start(1);
 }
 
 CQNascom::
 ~CQNascom()
 {
-  delete renderer_;
 }
 
 void
 CQNascom::
-loadChars(const string &filename)
+exec()
 {
-  renderer_->loadChars(filename);
+  timer_ = new QTimer;
+
+  connect(timer_, SIGNAL(timeout()), this, SLOT(timeOut()));
+
+  timer_->start(1);
+}
+
+CQZ80Dbg *
+CQNascom::
+addDebug()
+{
+  if (! dbg_) {
+    dbg_ = new CQZ80Dbg(nascom_->getZ80());
+
+    dbg_->init();
+
+    QFont fixedFont("Courier New", 16);
+
+    dbg_->setFixedFont(fixedFont);
+  }
+
+  dbg_->show();
+  dbg_->raise();
+
+  return dbg_;
 }
 
 void
 CQNascom::
-memChanged(ushort start, ushort len)
+screenMemChanged(ushort start, ushort len)
 {
 #if 0
   renderer->startDoubleBuffer();
@@ -137,7 +161,7 @@ memChanged(ushort start, ushort len)
       int px = scale*nascom->getCharWidth ()*x + border;
       int py = scale*nascom->getCharHeight()*y + border;
 
-      renderer->drawChar(px, py, c);
+      renderer->drawImage(px, py, getCharImage(c));
     }
 
   renderer->endDoubleBuffer();
@@ -162,9 +186,9 @@ paintEvent(QPaintEvent *)
 
   QPainter painter(this);
 
-  renderer_->setPainter(&painter);
+  CQNascomRenderer nrenderer(this, &painter);
 
-  nascom_->draw(renderer_, border_);
+  nascom_->draw(&nrenderer, border_);
 
   //renderer->endDoubleBuffer();
 }
@@ -173,7 +197,9 @@ void
 CQNascom::
 keyPressEvent(QKeyEvent *e)
 {
-  CKeyType type = CQUtil::convertKey(e->key(), e->modifiers());
+  CKeyEvent *kevent = CQUtil::convertEvent(e);
+
+  CKeyType type = kevent->getType();
 
   CZ80 *z80 = nascom_->getZ80();
 
@@ -184,26 +210,35 @@ keyPressEvent(QKeyEvent *e)
   else if (type == CKEY_TYPE_F2)
     z80->resetOpCounts();
   else
-    z80->keyPress(type);
+    z80->keyPress(*kevent);
 }
 
 void
 CQNascom::
 keyReleaseEvent(QKeyEvent *e)
 {
-  CKeyType type = CQUtil::convertKey(e->key(), e->modifiers());
+  CKeyEvent *kevent = CQUtil::convertEvent(e);
+
+  CKeyType type = kevent->getType();
 
   if (type == CKEY_TYPE_Escape || type == CKEY_TYPE_F1 || type == CKEY_TYPE_F2)
     return;
 
   CZ80 *z80 = nascom_->getZ80();
 
-  z80->keyRelease(type);
+  z80->keyRelease(*kevent);
 }
 
 void
 CQNascom::
 timeOut()
+{
+  doSteps();
+}
+
+void
+CQNascom::
+doSteps()
 {
   CZ80 *z80 = nascom_->getZ80();
 
@@ -213,151 +248,16 @@ timeOut()
 
 //------------
 
+void
 CQNascomRenderer::
-CQNascomRenderer(CQNascom *qnascom) :
- qnascom_(qnascom), painter_(0), chars_loaded_(false)
+clear(const CRGBA &bg)
 {
+  painter_->fillRect(qnascom_->rect(), QBrush(CQUtil::rgbaToColor(bg)));
 }
 
 void
 CQNascomRenderer::
-setPainter(QPainter *painter)
+drawImage(int x, int y, CImagePtr image)
 {
-  painter_ = painter;
-}
-
-void
-CQNascomRenderer::
-clear(bool invert)
-{
-  QColor c = (invert ? QColor(255,255,255) : QColor(0,0,0));
-
-  painter_->fillRect(qnascom_->rect(), QBrush(c));
-}
-
-void
-CQNascomRenderer::
-drawChar(int x, int y, uchar c)
-{
-  painter_->drawImage(x, y, getCharImage(c));
-}
-
-QImage
-CQNascomRenderer::
-getCharImage(uchar c)
-{
-  if (! chars_loaded_)
-    loadChars();
-
-  return char_images_[c];
-}
-
-void
-CQNascomRenderer::
-loadChars()
-{
-  char_image_ = QImage(nascom_chars);
-
-  loadImageChars();
-}
-
-void
-CQNascomRenderer::
-loadChars(const string &filename)
-{
-  char_image_ = QImage(filename.c_str());
-
-  loadImageChars();
-}
-
-void
-CQNascomRenderer::
-loadImageChars()
-{
-  bool invert = qnascom_->getNascom()->getInvert();
-  int  scale  = qnascom_->getNascom()->getScale ();
-
-  int char_width  = 8;
-  int char_height = 16;
-
-  char_images_.resize(256);
-
-  ushort y = 0;
-
-  for (ushort j = 0, k = 0; j < 16; ++j) {
-    ushort x = 0;
-
-    for (ushort i = 0; i < 16; ++i, ++k) {
-      QImage image1 = char_image_.copy(x, y, char_width, char_height);
-
-      QImage image2;
-
-      if (! invert) {
-        image2 = invertPixels(image1);
-
-        image1 = image2;
-      }
-
-      if (scale > 1) {
-        QImage image2 = image1.scaled(scale*char_width, scale*char_height);
-
-        image1 = image2;
-      }
-
-      char_images_[k] = image1;
-
-      x += char_width;
-    }
-
-    y += char_height;
-  }
-
-  chars_loaded_ = true;
-}
-
-QImage
-CQNascomRenderer::
-invertPixels(QImage image)
-{
-  QImage image1;
-
-  if (image.format() == QImage::Format_ARGB32 ||
-      image.format() == QImage::Format_Indexed8)
-    image1 = image;
-  else
-    image1 = image.convertToFormat(QImage::Format_ARGB32);
-
-  int w = image1.width();
-  int h = image1.height();
-
-  QImage::Format format = image1.format();
-
-  if (format == QImage::Format_ARGB32) {
-    for (int y = 0; y < h; ++y) {
-      for (int x = 0; x < w; ++x) {
-        QRgb rgb = image1.pixel(x, y);
-
-        int g = 255 - qGray(rgb);
-
-        QRgb rgb1 = qRgba(g, g, g, 255);
-
-        image1.setPixel(x, y, rgb1);
-      }
-    }
-  }
-  else {
-    int ncolors = image1.colorCount();
-
-    for (int i = 0; i < ncolors; ++i) {
-      QRgb rgb = image1.color(i);
-
-      int g = 255 - qGray(rgb);
-
-      QRgb rgb1 = qRgba(g, g, g, 255);
-
-      image1.setColor(i, rgb1);
-    }
-  }
-
-  return image1;
+  painter_->drawImage(x, y, CQUtil::toQImage(image));
 }

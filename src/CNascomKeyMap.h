@@ -1,4 +1,4 @@
-#include <CKeyType.h>
+#include <CEvent.h>
 
 #define NUM_KEYBOARD_PORTS 8
 
