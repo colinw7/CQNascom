@@ -22,10 +22,10 @@ class CQNascom : public QWidget, public CZ80Screen {
 
   void redraw();
 
-  void paintEvent(QPaintEvent *);
+  void paintEvent(QPaintEvent *) override;
 
-  void keyPressEvent  (QKeyEvent *e);
-  void keyReleaseEvent(QKeyEvent *e);
+  void keyPressEvent  (QKeyEvent *e) override;
+  void keyReleaseEvent(QKeyEvent *e) override;
 
   void doSteps();
 

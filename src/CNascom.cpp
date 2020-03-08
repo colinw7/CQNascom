@@ -44,8 +44,7 @@ static uchar serial_value = 0;
 static bool  serial_ok    = false;
 
 CNascom::
-CNascom() :
- port_data_(NULL), invert_(false), scale_(1), chars_loaded_(false)
+CNascom()
 {
   z80_.setBytes(nassys3_memory, NASSYS3_MEM_START_POS,
                 NASSYS3_MEM_END_POS - NASSYS3_MEM_START_POS + 1);

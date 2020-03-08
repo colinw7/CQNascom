@@ -4,6 +4,7 @@
 
 #include <CArgs.h>
 #include <CQApp.h>
+#include <CQImageUtil.h>
 #include <CQUtil.h>
 
 #include <QWidget>
@@ -259,5 +260,5 @@ void
 CQNascomRenderer::
 drawImage(int x, int y, CImagePtr image)
 {
-  painter_->drawImage(x, y, CQUtil::toQImage(image));
+  painter_->drawImage(x, y, CQImageUtil::toQImage(image));
 }
