@@ -1,9 +1,9 @@
 #include <std_c++.h>
-#include <CNascom/CNascom.h>
-#include <CZ80TclLib/CZ80TclLib.h>
-#include <CZ80TclLib/CZ80TclLibScreen.h>
-#include <CXLib/CXImage.h>
-#include <CArgs/CArgs.h>
+#include <CNascom.h>
+#include <CZ80TclLib.h>
+#include <CZ80TclLibScreen.h>
+#include <CXImage.h>
+#include <CArgs.h>
 
 struct CNascomScreen : public CZ80TclLibScreen {
   typedef map<uchar,CImagePtr> CharImageMap;

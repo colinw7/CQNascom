@@ -1,9 +1,10 @@
-#include "std_c++.h"
-#include "CNascom/CNascom.h"
-#include "CArgs/CArgs.h"
-#include "CStrUtil/CStrUtil.h"
-#include "CReadLine/CReadLine.h"
-#include "COS/COS.h"
+#include <std_c++.h>
+#include <CNascom.h>
+#include <CZ80RstData.h>
+#include <CArgs.h>
+#include <CStrUtil.h>
+#include <CReadLine.h>
+#include <COSTimer.h>
 
 struct CNascomRstData : public CZ80StdRstData {
   CReadLine readline;
@@ -195,7 +196,7 @@ rstFwd(unsigned short id)
       if (delay == 0)
         delay = 255;
 
-      COS::msleep(delay*2700);
+      COSTimer::msleep(delay*2700);
 
       z80.setA(0);
 
