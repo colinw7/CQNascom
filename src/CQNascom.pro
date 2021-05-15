@@ -10,7 +10,9 @@ MOC_DIR = .moc
 
 INCLUDEPATH += . ../include
 
-QMAKE_CXXFLAGS += -std=c++14
+QMAKE_CXXFLAGS += \
+-std=c++14 \
+-DCQUTIL_IMAGE \
 
 CONFIG += debug
 
@@ -34,6 +36,7 @@ INCLUDEPATH += \
 . ../include \
 ../../CQUtil/include \
 ../../CZ80/include \
+../../CQZ80Dbg/include \
 ../../CArgs/include \
 ../../CFont/include \
 ../../CImageLib/include \
@@ -52,6 +55,7 @@ unix:LIBS += \
 -L../../CUtil/lib \
 -L../../CArgs/lib \
 -L../../CZ80/lib \
+-L../../CQZ80Dbg/lib \
 -L../../CFile/lib \
 -L../../CFileUtil/lib \
 -L../../CMath/lib \
@@ -59,5 +63,5 @@ unix:LIBS += \
 -L../../CStrUtil/lib \
 -L../../CRegExp/lib \
 -lCQUtil -lCFont -lCImageLib -lCConfig -lCUtil \
--lCArgs -lCZ80 -lCFile -lCFileUtil -lCMath -lCOS -lCStrUtil -lCRegExp \
+-lCArgs -lCZ80 -lCQZ80Dbg -lCFile -lCFileUtil -lCMath -lCOS -lCStrUtil -lCRegExp \
 -lpng -ljpeg -ltre

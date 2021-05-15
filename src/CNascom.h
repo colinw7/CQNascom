@@ -2,8 +2,10 @@
 #define CNASCOM_H
 
 #include <CZ80.h>
+#include <CImagePtr.h>
+#include <CRGBA.h>
 
-struct CNascomPortData;
+class CNascomPortData;
 
 class CNascomRenderer {
  public:
@@ -11,9 +13,9 @@ class CNascomRenderer {
 
   virtual ~CNascomRenderer() { }
 
-  virtual void clear(bool invert) = 0;
+  virtual void clear(const CRGBA &bg) = 0;
 
-  virtual void drawChar(int x, int y, uchar c) = 0;
+  virtual void drawImage(int x, int y, CImagePtr image) = 0;
 };
 
 class CNascom {
@@ -47,13 +49,24 @@ class CNascom {
 
   bool getScreenPos(ushort pos, int *x, int *y);
 
+  bool loadChars(const std::string &filename);
+
+  CImagePtr getCharImage(uchar c);
+
   void draw(CNascomRenderer *renderer, int border=2);
 
  private:
+  bool loadChars();
+
+  bool loadChars(const CImagePtr &image);
+
+ private:
   CZ80             z80_;
-  CNascomPortData *port_data_;
-  bool             invert_;
-  int              scale_;
+  CNascomPortData *port_data_    { nullptr };
+  bool             invert_       { false };
+  int              scale_        { 1 };
+  bool             chars_loaded_ { false };
+  CImagePtr        char_images_[256];
 };
 
 #endif
