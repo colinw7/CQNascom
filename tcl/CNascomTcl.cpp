@@ -6,7 +6,7 @@
 #include <CArgs.h>
 
 struct CNascomScreen : public CZ80TclLibScreen {
-  typedef map<uchar,CImagePtr> CharImageMap;
+  typedef std::map<uchar,CImagePtr> CharImageMap;
 
   CNascom      &nascom;
   CharImageMap  char_image_map;

@@ -54,7 +54,7 @@ rstFwd(unsigned short id)
 {
   switch (id) {
     case 0x00: { // START
-      cout << "rst 00" << endl;
+      std::cout << "rst 00\n";
 
       char_num = 0;
 
@@ -63,7 +63,7 @@ rstFwd(unsigned short id)
     case 0x08: { // RIN
       readline.setPrompt("> ");
 
-      string line = readline.readLine();
+      std::string line = readline.readLine();
 
       z80.setA(CStrUtil::toInteger(line));
 
@@ -87,7 +87,7 @@ rstFwd(unsigned short id)
 
       switch (id1) {
         case 0x5B: { // MRET
-          cout << "MRET" << endl;
+          std::cout << "MRET\n";
 
           exit(0);
         }
@@ -100,28 +100,28 @@ rstFwd(unsigned short id)
           break;
         }
         case 0x68: { // B2HEX
-          cout << CStrUtil::toHexString(z80.getA(), 2);
+          std::cout << CStrUtil::toHexString(z80.getA(), 2);
 
           char_num += 2;
 
           break;
         }
         case 0x69: { // SPACE
-          cout << " ";
+          std::cout << " ";
 
           ++char_num;
 
           break;
         }
         case 0x6A: { // CRLF
-          cout << endl;
+          std::cout << "\n";
 
           char_num = 0;
 
           break;
         }
         case 0x6B: { // ERRM
-          cout << "Error" << endl;
+          std::cout << "Error\n";
 
           char_num = 0;
 
@@ -130,15 +130,14 @@ rstFwd(unsigned short id)
         case 0x7B: { // BLINK
           char c;
 
-          cin >> c;
+          std::cin >> c;
 
           z80.setA(c);
 
           break;
         }
         default: {
-          cerr << "Unhandled rst 0x18 - " <<
-                  CStrUtil::toHexString(id1, 2) << endl;
+          std::cerr << "Unhandled rst 0x18 - " << CStrUtil::toHexString(id1, 2) << "\n";
           break;
         }
       }
@@ -148,7 +147,7 @@ rstFwd(unsigned short id)
       break;
     }
     case 0x20: { // BRKPT
-      z80.printState(cout);
+      z80.printState(std::cout);
 
       char_num = 0;
 
@@ -160,7 +159,7 @@ rstFwd(unsigned short id)
       unsigned char c = z80.getByte(pc++);
 
       while (c != '\0') {
-        cout << c;
+        std::cout << c;
 
         ++char_num;
 
@@ -178,12 +177,12 @@ rstFwd(unsigned short id)
         c = '\n';
 
       if (c != '\n') {
-        cout << c;
+        std::cout << c;
 
         ++char_num;
       }
       else {
-        cout << endl;
+        std::cout << "\n";
 
         char_num = 0;
       }
@@ -205,10 +204,10 @@ rstFwd(unsigned short id)
   }
 
   if (char_num > 80) {
-    cout << endl;
+    std::cout << "\n";
 
     char_num = 0;
   }
 
-  cout.flush();
+  std::cout.flush();
 }
