@@ -6,6 +6,7 @@
 #include <CQApp.h>
 #include <CQImageUtil.h>
 #include <CQUtil.h>
+#include <CImageLib.h>
 
 #include <QWidget>
 #include <QPainter>

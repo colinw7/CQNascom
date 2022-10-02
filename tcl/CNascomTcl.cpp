@@ -1,4 +1,3 @@
-#include <std_c++.h>
 #include <CNascom.h>
 #include <CZ80TclLib.h>
 #include <CZ80TclLibScreen.h>
@@ -12,10 +11,10 @@ struct CNascomScreen : public CZ80TclLibScreen {
   CharImageMap  char_image_map;
 
   CNascomScreen(CNascom &nascom_1) :
-   CZ80TclLibScreen(nascom_1.getScreenPixelWidth (),
-                    nascom_1.getScreenPixelHeight(),
-                    nascom_1.getScreenMemStart(),
-                    nascom_1.getScreenMemEnd  ()),
+   CZ80TclLibScreen(ushort(nascom_1.getScreenPixelWidth ()),
+                    ushort(nascom_1.getScreenPixelHeight()),
+                    ushort(nascom_1.getScreenMemStart()),
+                    ushort(nascom_1.getScreenMemEnd  ())),
    nascom(nascom_1) {
   }
 
@@ -88,7 +87,7 @@ redraw()
   ushort y = 0;
 
   for (ushort j = 0; j < nascom.getScreenCharHeight(); ++j) {
-    ushort pos = nascom.getScreenMemLineStart(j);
+    ushort pos = ushort(nascom.getScreenMemLineStart(j));
 
     ushort x = 0;
 
@@ -97,10 +96,10 @@ redraw()
 
       canvas->drawImage(getCharImage(c), x, y);
 
-      x += nascom.getCharWidth();
+      x += ushort(nascom.getCharWidth());
     }
 
-    y += nascom.getCharHeight();
+    y += ushort(nascom.getCharHeight());
   }
 
   canvas->flush();

@@ -11,7 +11,7 @@ MOC_DIR = .moc
 INCLUDEPATH += . ../include
 
 QMAKE_CXXFLAGS += \
--std=c++14 \
+-std=c++17 \
 -DCQUTIL_IMAGE \
 
 CONFIG += debug

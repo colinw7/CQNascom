@@ -1,17 +1,17 @@
-#include <std_c++.h>
 #include <CNascom.h>
 #include <CZ80RstData.h>
 #include <CArgs.h>
 #include <CStrUtil.h>
 #include <CReadLine.h>
 #include <COSTimer.h>
+#include <unistd.h>
 
 struct CNascomRstData : public CZ80StdRstData {
   CReadLine readline;
-  int       char_num;
+  int       char_num { 0 };
 
-  CNascomRstData(CZ80 &z80) :
-   CZ80StdRstData(z80), char_num(0) {
+  CNascomRstData(CZ80 &z80_) :
+   CZ80StdRstData(z80_) {
   }
 
   void rstFwd(unsigned short id);
@@ -29,7 +29,7 @@ main(int argc, char **argv)
   if (cargs.isHelp())
     exit(1);
 
-  int e_value = cargs.getIntegerArg("-e");
+  int e_value = int(cargs.getIntegerArg("-e"));
 
   CZ80 *z80 = nascom.getZ80();
 
@@ -41,7 +41,7 @@ main(int argc, char **argv)
     z80->load(argv[i]);
 
   if (e_value > 0)
-    z80->execute(e_value);
+    z80->execute(ushort(e_value));
   else
     z80->execute();
 
@@ -65,7 +65,7 @@ rstFwd(unsigned short id)
 
       std::string line = readline.readLine();
 
-      z80.setA(CStrUtil::toInteger(line));
+      z80.setA(uchar(CStrUtil::toInteger(line)));
 
       break;
     }
@@ -74,7 +74,7 @@ rstFwd(unsigned short id)
 
       char offset = z80.getSByte(pc++);
 
-      z80.setPC(z80.getPC() + offset);
+      z80.setPC(ushort(z80.getPC() + offset));
 
       z80.push(pc);
 
