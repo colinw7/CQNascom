@@ -6,6 +6,8 @@
 #include <CQApp.h>
 #include <CQImageUtil.h>
 #include <CQUtil.h>
+#include <CQUtilEvent.h>
+#include <CQUtilRGBA.h>
 #include <CImageLib.h>
 
 #include <QWidget>
