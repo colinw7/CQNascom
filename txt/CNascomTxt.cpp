@@ -14,7 +14,7 @@ struct CNascomRstData : public CZ80StdRstData {
    CZ80StdRstData(z80_) {
   }
 
-  void rstFwd(unsigned short id);
+  void rstFwd(unsigned short id) override;
 };
 
 int
